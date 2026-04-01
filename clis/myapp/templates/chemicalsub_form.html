@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Sub Items - {{ chemical.name }}</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2>Add Sub Items for {{ chemical.name }}</h2>
+
+        <form method="post" class="mt-4">
+            {% csrf_token %}
+            {{ formset.management_form }}
+            
+            {% for form in formset %}
+                <div class="card mb-3">
+                    <div class="card-body">
+                        {{ form.as_p }}
+                    </div>
+                </div>
+            {% endfor %}
+            
+            <button type="submit" class="btn btn-success">Save</button>
+            <a href="{% url 'chemical_detail' chemical.id %}" class="btn btn-secondary ml-2">Cancel</a>
+        </form>
+    </div>
+</body>
+</html>

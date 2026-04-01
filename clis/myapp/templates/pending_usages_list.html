@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Daily Usages</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert for Alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* General Styles */
+        * {
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Add Button Styles */
+        .btn-add {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .btn-add:hover {
+            background-color: #0056b3;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Row Colors */
+        .low-quantity {
+            background-color: yellow !important;
+        }
+
+        .empty-stock {
+            background-color: red !important;
+            color: white;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-approve {
+            background-color: #28a745;
+        }
+
+        .btn-discard {
+            background-color: #dc3545;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Empty State for Table */
+        .empty-state {
+            text-align: center;
+            padding: 12px;
+            color: #888;
+        }
+
+        /* Popup Form Styles */
+        .form-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 320px;
+        }
+
+        .form-popup input,
+        .form-popup button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Back Button with JS -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <h2><i class="fas fa-clock"></i> Pending Daily Usages</h2>
+
+        <!-- Daily Usages Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Usage ID</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Item</th>
+                    <th>Quantity</th>
+                    <th>Batch</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usage in pending_usages %}
+                <tr class="
+                    
+                ">
+                    <td>{{ usage.usage_id }}</td>
+                    <td>{{ usage.date }}</td>
+                    <td>{{ usage.time }}</td>
+                    <td>{{ usage.item.chem_id.name }} - {{ usage.item.code }}</td>
+                    <td>{{ usage.quantity }}</td>
+                    <td>{{ usage.batch }}</td>
+                    <td>
+                        <button class="btn btn-approve"
+                            onclick="confirmApprove('{{ usage.usage_id }}')">
+                            <i class="fas fa-check"></i> Approve
+                        </button>
+                        <button class="btn btn-discard"
+                            onclick="confirmDiscard('{{ usage.usage_id }}')">
+                            <i class="fas fa-times"></i> Discard
+                        </button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        No pending daily usages available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Approve Usage Form -->
+    <div class="form-popup" id="approveForm">
+        <h3>Approve Usage</h3>
+        <form method="POST" action="" id="approveFormAction">
+            {% csrf_token %}
+            <input type="hidden" name="usage_id" id="approveUsageId">
+            <button type="submit" class="btn btn-approve">Confirm Approve</button>
+            <button type="button" class="btn btn-discard" onclick="closeForm('approveForm')">Cancel</button>
+        </form>
+    </div>
+
+    <!-- Discard Usage Form -->
+    <div class="form-popup" id="discardForm">
+        <h3>Discard Usage</h3>
+        <form method="POST" action="{% url 'discard_daily_usage' usage_id=0 %}" id="discardFormAction">
+            {% csrf_token %}
+            <input type="hidden" name="usage_id" id="discardUsageId">
+            <button type="submit" class="btn btn-discard">Confirm Discard</button>
+            <button type="button" class="btn btn-discard" onclick="closeForm('discardForm')">Cancel</button>
+        </form>
+        
+    </div>
+
+    <!-- JavaScript Section -->
+    <script>
+        // Show Approve Confirmation
+        function confirmApprove(usageId) {
+            Swal.fire({
+                title: "Approve Usage?",
+                text: "Are you sure you want to approve this usage?",
+                icon: "success",
+                showCancelButton: true,
+                confirmButtonColor: "#28a745",
+                confirmButtonText: "Yes, Approve!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/approve_daily_usage/${usageId}/`;
+                }
+            });
+        }
+
+        function confirmDiscard(usageId) {
+    Swal.fire({
+        title: "Discard Usage?",
+        text: "This action cannot be undone!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#dc3545",
+        confirmButtonText: "Yes, Discard!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            // Set the usage_id in the hidden input field
+            const form = document.getElementById('discardFormAction');
+            const hiddenInput = document.getElementById('discardUsageId');
+            
+            // Make sure the hidden input has the correct usage_id
+            hiddenInput.value = usageId;
+
+            // Submit the form now with the correct usage_id
+            form.submit();
+        }
+    });
+}
+
+
+        // Close Form
+        function closeForm(formId) {
+            document.getElementById(formId).style.display = 'none';
+        }
+    </script>
+
+</body>
+
+</html>

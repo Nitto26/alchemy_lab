@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Edit Fine</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+
+        /* Form Container */
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 50%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Form Elements */
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="text"], input[type="number"], select, textarea {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        .form-section {
+            margin-bottom: 25px;
+        }
+
+        .form-section hr {
+            border: 1px solid #ddd;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            color: white;
+            background-color: #17a2b8;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .cancel-button {
+            background-color: #6c757d;
+        }
+
+        .cancel-button:hover {
+            background-color: #5a6268;
+        }
+
+        .form-actions {
+            text-align: center;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .form-container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Form Container -->
+<div class="form-container">
+    <h2>Edit Fine</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        
+        <!-- Fine Form Fields -->
+        <div class="form-section">
+            {{ fine_form.as_p }}
+        </div>
+
+        <div class="form-actions">
+            <button type="submit">Update</button>
+            <a href="{% url 'fine_list' %}">
+                <button type="button" class="cancel-button">Cancel</button>
+            </a>
+        </div>
+    </form>
+</div>
+
+</body>
+</html>

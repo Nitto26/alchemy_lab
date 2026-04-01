@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Form</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .form-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 40%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #007bff;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: block;
+        }
+
+        input[type="text"], input[type="number"], input[type="date"], textarea, select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-sizing: border-box;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #17a2b8;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .form-actions {
+            text-align: center;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .form-container {
+                width: 90%;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Form Container -->
+<div class="form-container">
+    <h2>Item Form</h2>
+
+    <form method="post" action="">
+        {% csrf_token %}
+        
+        <!-- Date Input -->
+        <label for="date">Date:</label>
+        {{ form.date }}
+        <br>
+
+        <!-- Item Name Input -->
+        <label for="item_name">Item Name:</label>
+        {{ form.item_name }}
+        <br>
+
+        <!-- Price Input -->
+        <label for="price">Price:</label>
+        {{ form.price }}
+        <br>
+
+        <!-- Submit Button -->
+        <button type="submit">Save</button>
+    </form>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ chemical.name }} - Details</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1, h3 {
+            color: #007bff;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .back-btn i {
+            margin-right: 8px;
+        }
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #343a40;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 8px 12px;
+            text-decoration: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+        }
+        .btn-primary {
+            background-color: #28a745;
+        }
+        .btn-warning {
+            background-color: #ffc107;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+        }
+        .btn:hover {
+            opacity: 0.8;
+        }
+
+        /* Conditional Row Styles */
+        .expired {
+            background-color: red !important;
+            color: white;
+        }
+        .low-stock {
+            background-color: yellow !important;
+        }
+        .expiring-soon {
+            background-color: #ffa07a !important; /* Light Red for near expiry */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- Back Button -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <!-- Chemical Details -->
+        <h1><i class="fas fa-flask"></i> {{ chemical.name }} - Details</h1>
+        <p><strong>Specification:</strong> {{ chemical.specification }}</p>
+        <p><strong>Location:</strong> {{ chemical.location }}</p>
+        <p><strong>Category:</strong> {{ chemical.get_category_display }}</p>
+
+        <h3><i class="fas fa-boxes"></i> Sub-Chemicals</h3>
+        
+        <!-- Add Sub-Chemical Button -->
+        <a href="{% url 'chemicalsub_create' chemical.id %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Add Sub-Chemical
+        </a>
+
+        <!-- Sub-Chemicals Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Code</th>
+                    <th>Company</th>
+                    <th>Fund</th>
+                    <th>Expiration Date</th>
+                    <th>Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sub in sub_chemicals %}
+                <tr class="
+                    {% if sub.is_expired or sub.exp_date <= today %} expired
+                    {% elif sub.total_quantity == 0 or sub.total_quantity == None %} low-stock
+                    {% elif sub.total_quantity < 100 %} low-stock
+                    {% elif sub.exp_date and sub.exp_date <= six_months_ahead %} expiring-soon
+                    {% endif %}
+                ">
+                    <td>{{ sub.code }}</td>
+                    <td>{{ sub.company }}</td>
+                    <td>{{ sub.fund }}</td>
+                    <td>{{ sub.exp_date }}</td>
+                    <td>{{ sub.total_quantity|default:"N/A" }}</td>
+                    <td>
+                        <a href="{% url 'chemicalsub_edit' sub.id %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'chemicalsub_delete' sub.id %}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure?')">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center">No sub-chemicals available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Page</title>
+<style>
+* {
+margin: 0;
+box-sizing: border-box;
+font-family: 'Poppins', sans-serif;
+}
+
+body {
+margin: 0;
+display: flex;
+justify-content: center;
+align-items: center;
+height: 100vh;
+background-image: url('https://img.freepik.com/premium-photo/chemistry-lab-man-with-tablet-laboratory-with-generative-ai_1375-16930.jpg');
+background-size: cover;
+background-position: center;
+}
+
+.glass-container {
+width: 320px;
+height: 400px;
+position: relative;
+z-index: 1;
+background: rgba(255, 255, 255, 0.1); /* Transparent background */
+box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Soft shadow for depth */
+border-radius: 20px;
+border: 1px solid rgba(255, 255, 255, 0.2); /* Subtle border */
+backdrop-filter: blur(15px); /* Apply strong blur effect */
+-webkit-backdrop-filter: blur(15px); /* Safari support */
+}
+
+.glass-container::before {
+content: '';
+position: absolute;
+width: 100%;
+height: 100%;
+border-radius: 20px;
+backdrop-filter: blur(15px); /* Stronger blur effect */
+-webkit-backdrop-filter: blur(15px); /* Safari support */
+z-index: -1;
+}
+
+.login-box {
+max-width: 250px;
+margin: 0 auto;
+text-align: center;
+padding: 20px;
+}
+
+h2 {
+color: #fff;
+margin-top: 20px;
+margin-bottom: 10px;
+}
+
+form {
+display: flex;
+flex-direction: column;
+margin-top: 20px;
+}
+
+input {
+padding: 10px;
+margin-top: 20px;
+border: none;
+border-radius: 15px;
+background: rgba(255, 255, 255, 0.1); /* Transparent input */
+border: 1px solid rgba(255, 255, 255, 0.3); /* Subtle border */
+color: #fff;
+font-size: 14px;
+transition: 0.3s;
+}
+
+input::placeholder {
+color: #fff;
+}
+
+input:focus {
+outline: none;
+border: 1px solid rgba(255, 255, 255, 0.7); /* Highlight on focus */
+background: rgba(255, 255, 255, 0.2); /* Slightly darker when focused */
+}
+
+
+
+button {
+background: #fff;
+color: black;
+padding: 12px;
+border: none;
+border-radius: 15px;
+cursor: pointer;
+margin-top: 20px;
+font-weight: bold;
+transition: 0.3s;
+}
+
+button:hover {
+background: transparent;
+color: white;
+outline: 1px solid #fff;
+}
+
+
+/* Error message */
+.error {
+color: red;
+font-size: 12px;
+margin-top: 10px;
+}
+</style>
+</head>
+<body>
+<div class="glass-container">
+<div class="login-box">
+<h2>Login</h2>
+<form id="loginForm"  method="POST" onsubmit="return validateForm(event)">
+    {% csrf_token %}
+<input type="text" id="username" name="username" required placeholder="Username">
+<input type="password" id="password" name="password" required placeholder="Password">
+
+<button type="submit">Login</button>
+{% if messages %}
+    <div id="errorMessage" class="error">
+        {% for message in messages %}
+            {{ message }}
+        {% endfor %}
+    </div>
+{% endif %}
+
+</form>
+</div>
+</div>
+
+</body>
+</html>

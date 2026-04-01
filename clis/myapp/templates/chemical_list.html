@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chemical List</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .back-btn i {
+            margin-right: 8px;
+        }
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Add Button */
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        /* Search and Sort Box */
+        .search-box {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #28a745;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+        .sort-btn, .all-btn {
+            background-color:#007bff;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        .sort-btn:hover, .all-btn:hover {
+            background-color:  #0056b3;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #343a40;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        th.asc::after {
+            content: " ▲";
+        }
+
+        th.desc::after {
+            content: " ▼";
+        }
+
+        /* General Button Styles */
+        .btn {
+            padding: 8px 12px;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            display: inline-block;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-info {
+            background-color: #17a2b8;
+            color: white;
+        }
+
+        .btn-info:hover {
+            background-color: #138496;
+        }
+
+        .btn-warning {
+            background-color: #ffc107;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        .btn-sm {
+            font-size: 12px;
+            padding: 6px 10px;
+        }
+
+        i {
+            margin-right: 5px;
+        }
+
+        .btn-info i, .btn-warning i, .btn-danger i {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Back Button -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <h2><i class="fas fa-flask"></i> Chemical List</h2>
+
+        <!-- Add Chemical Button -->
+        <a href="{% url 'chemical_create' %}" class="btn-primary">
+            <i class="fas fa-plus"></i> Add New Chemical
+        </a>
+
+        <!-- Search and Sort Section -->
+        <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="search" class="search-box" onkeyup="searchTable()" placeholder="Search by Name or ID">
+            <div>
+                <button class="sort-btn" onclick="sortByCategory('Organic')">
+                    <i class="fas fa-seedling"></i> Organic
+                </button>
+                <button class="sort-btn" onclick="sortByCategory('Inorganic')">
+                    <i class="fas fa-atom"></i> Inorganic
+                </button>
+                <button class="all-btn" onclick="showAllChemicals()">
+                    <i class="fas fa-list"></i> All Chemicals
+                </button>
+            </div>
+        </div>
+
+        <!-- Chemical Table -->
+        <table id="chemicalTable">
+            <thead>
+                <tr>
+                    <th>No:</th> <!-- New Column for Serial No -->
+                    
+                    <th onclick="sortTable(0)">Name</th>
+                    <th onclick="sortTable(1)">Specification</th>
+                    <th onclick="sortTable(2)">Location</th>
+                    <th onclick="sortTable(3)">Category</th>
+                    <th onclick="sortTable(4)">Total Quantity</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="chemicalTableBody">
+                {% for chemical in chemicals %}
+                <tr>
+                    <td>{{ forloop.counter }}</td> <!-- Serial Number using forloop.counter -->
+                    
+                    <td>{{ chemical.name }}</td>
+                    <td>{{ chemical.specification }}</td>
+                    <td>{{ chemical.location }}</td>
+                    <td>{{ chemical.get_category_display }}</td>
+                    <td>{{ chemical.total_quantity }}</td>
+                    <td>
+                        <a href="{% url 'chemical_detail' chemical.id %}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i> 
+                        </a>
+                        <a href="{% url 'chemical_edit' chemical.id %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i> 
+                        </a>
+                        <a href="{% url 'chemical_delete' chemical.id %}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i> 
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="text-center">No chemicals available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Function to search through the table based on Name or ID
+        function searchTable() {
+            let input = document.getElementById("search").value.toLowerCase();
+            let rows = document.getElementById("chemicalTableBody").getElementsByTagName("tr");
+
+            for (let i = 0; i < rows.length; i++) {
+                let idCell = rows[i].cells[1].textContent.toLowerCase();
+                let nameCell = rows[i].cells[2].textContent.toLowerCase();
+                rows[i].style.display = (idCell.includes(input) || nameCell.includes(input)) ? "" : "none";
+            }
+        }
+
+        // Function to sort by Category: Organic or Inorganic
+        function sortByCategory(category) {
+            let rows = Array.from(document.getElementById("chemicalTableBody").getElementsByTagName("tr"));
+            rows.forEach(row => {
+                let categoryCell = row.cells[4].textContent.trim();
+                row.style.display = categoryCell === category ? "" : "none";
+            });
+        }
+
+        // Function to show all chemicals (reset filters)
+        function showAllChemicals() {
+            let rows = document.getElementById("chemicalTableBody").getElementsByTagName("tr");
+            for (let i = 0; i < rows.length; i++) {
+                rows[i].style.display = "";
+            }
+            document.getElementById("search").value = "";  // Clear search box
+        }
+
+        // Function to sort the table
+        function sortTable(columnIndex) {
+            var table = document.getElementById("chemicalTable");
+            var rows = Array.from(table.rows).slice(1); // Exclude header row
+            var headers = table.rows[0].cells; // Access table headers
+            var isAscending = !headers[columnIndex].classList.contains("asc"); // Determine sorting order
+
+            // Remove sorting classes from all headers
+            Array.from(headers).forEach((header) => {
+                header.classList.remove("asc", "desc");
+            });
+
+            // Sorting logic
+            rows.sort(function (a, b) {
+                var aText = a.cells[columnIndex].innerText.trim().toLowerCase();
+                var bText = b.cells[columnIndex].innerText.trim().toLowerCase();
+
+                if (isAscending) {
+                    return aText > bText ? 1 : aText < bText ? -1 : 0;
+                } else {
+                    return aText < bText ? 1 : aText > bText ? -1 : 0;
+                }
+            });
+
+            // Update table rows and header sorting icon
+            rows.forEach(row => table.appendChild(row));
+            headers[columnIndex].classList.add(isAscending ? "asc" : "desc");
+        }
+    </script>
+</body>
+</html>

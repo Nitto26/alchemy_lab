@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Purchase Item</title>
+</head>
+<body>
+
+    <h2>Edit Item</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Update</button>
+        <a href="{% url 'purchase_detail' sub_item.purchase.id %}">Cancel</a>
+    </form>
+
+</body>
+</html>

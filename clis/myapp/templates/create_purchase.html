@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Purchase Request</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 700px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            margin: auto;
+        }
+
+        h2, h3 {
+            text-align: center;
+            color: #333;
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        input, select, textarea {
+            padding: 10px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .button-container {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+
+        button {
+            padding: 10px 15px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        button[type="submit"] {
+            background-color: #28a745;
+            color: white;
+            border: none;
+        }
+
+        button[type="button"] {
+            background-color: #007bff;
+            color: white;
+            border: none;
+        }
+
+        button:hover {
+            opacity: 0.9;
+        }
+
+        .plus-button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 50%;
+            font-size: 20px;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .remove-button {
+            background-color: #dc3545;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-top: 5px;
+            cursor: pointer;
+        }
+
+        #excelUploadContainer,
+        #manualFormContainer {
+            margin-top: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #f9f9f9;
+            display: none;
+        }
+
+        .sub-item {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin-top: 10px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+    </style>
+
+    <script>
+        function showExcelUpload() {
+            document.getElementById('excelUploadContainer').style.display = 'block';
+            document.getElementById('manualFormContainer').style.display = 'none';
+        }
+
+        function showManualForm() {
+            document.getElementById('excelUploadContainer').style.display = 'none';
+            document.getElementById('manualFormContainer').style.display = 'block';
+        }
+
+        function addSubItemRow() {
+            let container = document.getElementById("sub-items-container");
+            let totalForms = document.querySelector("#id_" + "{{ formset.prefix }}-TOTAL_FORMS");
+            let formNum = parseInt(totalForms.value);
+
+            // Clone the first form (hidden template)
+            let newForm = document.querySelector(".sub-item-template").cloneNode(true);
+            newForm.classList.remove("sub-item-template");
+            newForm.style.display = "block";
+
+            // Replace __prefix__ with the current form number
+            newForm.innerHTML = newForm.innerHTML.replace(/__prefix__/g, formNum);
+
+            container.appendChild(newForm);
+            totalForms.value = formNum + 1;
+        }
+
+        function removeRow(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</head>
+
+<body>
+
+    <div class="container">
+        <h2>Add Purchase Request</h2>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+
+            <!-- Main Purchase Form -->
+            <h3>Purchase Details</h3>
+            {{ form.as_p }}
+
+            <!-- Buttons to Choose Between Upload and Manual -->
+            <div class="button-container">
+                <button type="button" onclick="showExcelUpload()">Upload Excel</button>
+                <button type="button" onclick="showManualForm()">Add Manually</button>
+            </div>
+            <a href="{% url 'download_excel_template' %}" class="btn btn-success">Download Excel Format</a>
+            <!-- Excel Upload Form -->
+            <div id="excelUploadContainer">
+                <h3>Upload Excel File</h3>
+                <input type="file" name="excel_file" accept=".xlsx, .xls">
+                <button type="submit" name="upload_submit">Upload</button>
+            </div>
+
+            <!-- Manual Sub-Items Form -->
+            <div id="manualFormContainer">
+                <h3>Add Items Manually</h3>
+                {{ formset.management_form }}
+                <div id="sub-items-container">
+                    {% for subform in formset %}
+                        <div class="sub-item">
+                            {{ subform.as_p }}
+                            <button type="button" class="remove-button" onclick="removeRow(this)">Remove</button>
+                        </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Button to Add More Items -->
+                <button type="button" class="plus-button" onclick="addSubItemRow()">+</button>
+                <br><br>
+                <button type="submit" name="manual_submit">Submit Manually</button>
+            </div>
+        </form>
+
+        <!-- Hidden Template for Manual Entry Form -->
+        <div class="sub-item-template" style="display: none;">
+            <div class="sub-item">
+                {{ formset.empty_form.as_p }}
+                <button type="button" class="remove-button" onclick="removeRow(this)">Remove</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fine List</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* General Styles */
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Add Button */
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Button Styles */
+        .btn-warning {
+            background-color: #ffc107;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        /* Search and Filter Box */
+        .search-box {
+            width: 300px;
+            padding: 8px;
+            border: 1px solid #28a745;
+            border-radius: 5px;
+            margin-bottom: 15px;
+        }
+
+        .filter-btn,
+        .all-btn {
+            background-color: #007bff;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        .filter-btn:hover,
+        .all-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Back Button -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <h2><i class="fas fa-file-invoice-dollar"></i> Fine List</h2>
+
+        <!-- Add Fine Button -->
+        <a href="{% url 'add_fine' %}" class="btn-primary">
+            <i class="fas fa-plus"></i> Add New Fine
+        </a>
+
+        <!-- Search and Filter Section -->
+        <div class="d-flex justify-content-between mb-3">
+            <input type="text" id="searchInput" class="search-box" onkeyup="searchTable()" placeholder="Search by Name or Admission No">
+            <div>
+                <button class="filter-btn" onclick="filterFines('paid')">
+                    <i class="fas fa-check-circle"></i> Paid
+                </button>
+                <button class="filter-btn" onclick="filterFines('not_paid')">
+                    <i class="fas fa-times-circle"></i> Unpaid
+                </button>
+                <button class="all-btn" onclick="showAllFines()">
+                    <i class="fas fa-list"></i> All Fines
+                </button>
+            </div>
+        </div>
+
+        <!-- Fine List Table -->
+        <table id="fineTable">
+            <thead>
+                <tr>
+                    <th>Admission No</th>
+                    <th>Name</th>
+                    <th>Department</th>
+                    <th>Year</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="fineTableBody">
+                {% for fine in fines %}
+                <tr class="fine-row" data-status="{{ fine.status|lower }}">
+                    <td>
+                        <a href="{% url 'fine_detail' fine.id %}" style="text-decoration: none; color: #007bff; font-weight: 500;">
+                            <strong>{{ fine.admission_no.admission_no }}</strong>
+                        </a>
+                    </td>
+                    <td>{{ fine.name }}</td>
+                    <td>{{ fine.department }}</td>
+                    <td>{{ fine.year }}</td>
+                    <td>₹{{ fine.total }}</td>
+                    <td>
+                        {% if fine.status == 'paid' %}
+                        <span style="color: green;"><i class="fas fa-check-circle"></i> Paid</span>
+                        {% else %}
+                        <span style="color: red;"><i class="fas fa-times-circle"></i> Unpaid</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <!-- Edit Button -->
+                        <a href="{% url 'edit_fine' fine.id %}" class="btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <!-- Delete Button -->
+                        <a href="{% url 'delete_fine' fine.id %}" onclick="return confirm('Are you sure?')" class="btn-danger">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center">No fines available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Search by Name or Admission No
+        function searchTable() {
+            let input = document.getElementById("searchInput").value.toLowerCase();
+            let rows = document.querySelectorAll("#fineTableBody tr");
+
+            rows.forEach(row => {
+                let name = row.cells[1].textContent.toLowerCase();
+                let admissionNo = row.cells[0].textContent.toLowerCase();
+
+                if (name.includes(input) || admissionNo.includes(input)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        // Filter Fines by Status (Paid/Unpaid)
+        function filterFines(status) {
+            let rows = document.querySelectorAll("#fineTableBody tr");
+
+            rows.forEach(row => {
+                let rowStatus = row.getAttribute("data-status").toLowerCase();
+                if (status === "not_paid") {
+                    // Show only unpaid fines
+                    row.style.display = rowStatus !== "paid" ? "" : "none";
+                } else {
+                    // Show based on exact match
+                    row.style.display = rowStatus === status ? "" : "none";
+                }
+            });
+        }
+
+        // Show all fines
+        function showAllFines() {
+            let rows = document.querySelectorAll("#fineTableBody tr");
+            rows.forEach(row => row.style.display = "");
+            document.getElementById("searchInput").value = "";
+        }
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase List</title>
+    {% load static %}
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+        .back-btn i {
+            margin-right: 8px;
+        }
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Filter and Search Section */
+        .filter-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+        }
+        .filter-btn {
+            padding: 8px 12px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+        .filter-btn:hover {
+            background-color: #0056b3;
+        }
+        .search-input {
+            padding: 8px;
+            width: 300px;
+            border: 1px solid #007bff;
+            border-radius: 5px;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #343a40;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Action Links */
+        .action-links a {
+            text-decoration: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+            margin-right: 8px;
+        }
+        .edit-btn {
+            color: #ffc107;
+        }
+        .delete-btn {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        /* Success Message */
+        .success-msg {
+            color: #28a745;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 12px;
+            color: #888;
+        }
+
+        .purchase-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .purchase-link:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Back Button -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <h2><i class="fas fa-list-alt"></i> Purchase List</h2>
+
+        <!-- Display Messages -->
+        {% if messages %}
+            {% for message in messages %}
+                <p class="success-msg">{{ message }}</p>
+            {% endfor %}
+        {% endif %}
+
+        <!-- Filter and Search Section -->
+        <div class="filter-section">
+            <!-- Filter Buttons -->
+            <div>
+                <button class="filter-btn" onclick="sortTable(1)">Sort by Supplier</button>
+                <button class="filter-btn" onclick="sortTable(2)">Sort by Date</button>
+            </div>
+            <!-- Search Input -->
+            <input type="text" id="search" class="search-input" onkeyup="searchTable()" placeholder="Search by Purchase No, Invoice No, or Supplier">
+        </div>
+
+        <!-- Purchase Table -->
+        <table id="purchaseTable">
+            <thead>
+                <tr>
+                    <th>Serial No</th> <!-- New Serial Number Column -->
+                    <th>Purchase No</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Invoice No</th>
+                    <th>Total Amount</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for purchase in purchases %}
+                <tr>
+                    <td>{{ forloop.counter }}</td> <!-- Serial Number -->
+                    <td>
+                        <a href="{% url 'purchase_detail' purchase.purchase_id %}" class="purchase-link">
+                            {{ purchase.purchase_no }}
+                        </a>
+                    </td>
+                    <td>{{ purchase.supplier_code.name }}</td>
+                    <td>{{ purchase.date }}</td>
+                    <td>{{ purchase.invoice_no }}</td>
+                    <td>₹{{ purchase.total_amount }}</td>
+                    <td class="action-links">
+                        <a href="{% url 'edit_purchase' purchase.purchase_id %}" class="edit-btn">
+                            <i class="fas fa-edit"></i> 
+                        </a> |
+                        <a href="{% url 'delete_purchase' purchase.purchase_id %}" class="delete-btn" onclick="return confirmDelete('{{ purchase.purchase_no }}')">
+                            <i class="fas fa-trash-alt"></i> 
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-state">No purchases found.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        // Confirm Delete
+        function confirmDelete(purchaseNo) {
+            return confirm(`Are you sure you want to delete Purchase No: ${purchaseNo}?`);
+        }
+
+        // Search Functionality
+        function searchTable() {
+            let input = document.getElementById('search').value.toLowerCase();
+            let table = document.getElementById('purchaseTable');
+            let rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                let purchaseNo = rows[i].getElementsByTagName('td')[1]?.innerText.toLowerCase();
+                let supplier = rows[i].getElementsByTagName('td')[2]?.innerText.toLowerCase();
+                let invoiceNo = rows[i].getElementsByTagName('td')[4]?.innerText.toLowerCase();
+
+                if (purchaseNo.includes(input) || supplier.includes(input) || invoiceNo.includes(input)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+
+        // Sort Table (Ascending Order)
+        function sortTable(columnIndex) {
+            let table = document.getElementById('purchaseTable');
+            let rows = Array.from(table.rows).slice(1);
+            let sortedRows = rows.sort((a, b) => {
+                let cellA = a.cells[columnIndex].innerText.toLowerCase();
+                let cellB = b.cells[columnIndex].innerText.toLowerCase();
+                return cellA.localeCompare(cellB);
+            });
+
+            for (let i = 1; i < table.rows.length; i++) {
+                table.deleteRow(1);
+            }
+            for (let row of sortedRows) {
+                table.appendChild(row);
+            }
+        }
+    </script>
+
+</body>
+</html>

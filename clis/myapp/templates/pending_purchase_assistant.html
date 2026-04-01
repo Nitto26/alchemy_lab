@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Purchase Requests</title>
+    {% load static %}
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+        .back-btn i {
+            margin-right: 8px;
+        }
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Add Purchase Button */
+        .add-btn {
+            display: inline-block;
+            padding: 10px 15px;
+            margin-bottom: 20px;
+            background-color: #28a745;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-size: 16px;
+            transition: background-color 0.3s;
+        }
+        .add-btn i {
+            margin-right: 8px;
+        }
+        .add-btn:hover {
+            background-color: #218838;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #343a40;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Purchase Link */
+        .purchase-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+        .purchase-link:hover {
+            text-decoration: underline;
+        }
+
+        /* Empty State Message */
+        .empty-state {
+            text-align: center;
+            padding: 20px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Back Button -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <!-- Page Heading -->
+        <h2><i class="fas fa-shopping-cart"></i> Pending Purchases</h2>
+
+        <!-- Add New Purchase Button -->
+        <a href="{% url 'create_purchase' %}" class="add-btn">
+            <i class="fas fa-plus"></i> Add New Purchase
+        </a>
+
+        <!-- Purchases Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Purchase No</th>
+                    <th>Supplier</th>
+                    <th>Date</th>
+                    <th>Invoice No</th>
+                    <th>Total Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for purchase in purchases %}
+                <tr>
+                    <td>
+                        <a href="{% url 'pending_purchase_detail' purchase.pk %}" class="purchase-link">
+                            {{ purchase.purchase_no }}
+                        </a>
+                    </td>
+                    <td>{{ purchase.supplier_code }}</td>
+                    <td>{{ purchase.date }}</td>
+                    <td>{{ purchase.invoice_no }}</td>
+                    <td>₹{{ purchase.total_amount }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="empty-state">
+                        No pending purchases found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</body>
+</html>

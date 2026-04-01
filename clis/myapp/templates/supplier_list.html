@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Supplier Management</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert for Alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* General Styles */
+        * {
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Add Button Styles */
+        .btn-add {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .btn-add:hover {
+            background-color: #0056b3;
+        }
+
+        /* Table Styles - Updated */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Empty State for Table */
+        .empty-state {
+            text-align: center;
+            padding: 12px;
+            color: #888;
+        }
+
+        /* Popup Form Styles */
+        .form-popup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            width: 320px;
+        }
+
+        .form-popup input,
+        .form-popup button {
+            width: 100%;
+            margin-top: 10px;
+            padding: 8px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Back Button with JS -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <h2><i class="fas fa-users"></i> Supplier Management</h2>
+
+        <!-- Add Supplier Button -->
+        <button class="btn btn-add" onclick="showAddForm()">
+            <i class="fas fa-plus"></i> Add Supplier
+        </button>
+
+        <!-- Messages -->
+        {% if messages %}
+        {% for message in messages %}
+        <script>
+            Swal.fire({
+                icon: "{{ message.tags }}",
+                text: "{{ message }}",
+                timer: 2000
+            });
+        </script>
+        {% endfor %}
+        {% endif %}
+
+        <!-- Supplier Table with Updated Styles -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Serial No</th>
+                    <th>Code</th>
+                    <th>Name</th>
+                    <th>Address</th>
+                    <th>Contact</th>
+                    <th>Email</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for supplier in suppliers %}
+                <tr>
+                    <td>{{ forloop.counter }}</td> <!-- Serial number -->
+                    <td>{{ supplier.code }}</td>
+                    <td>{{ supplier.name }}</td>
+                    <td>{{ supplier.address }}</td>
+                    <td>{{ supplier.contact }}</td>
+                    <td>{{ supplier.email }}</td>
+                    <td>
+                        <a href="{% url 'supplier_edit' supplier.supplier_id %}" class="btn btn-edit">✏️ </a><br><br>
+                        <a href="{% url 'supplier_delete' supplier.supplier_id %}" class="btn btn-delete" onclick="return confirm('Are you sure?');">🗑️ </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="empty-state">
+                        No suppliers found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Add Supplier Form -->
+    <div class="form-popup" id="addForm">
+        <h3>Add Supplier</h3>
+        <form method="POST" action="{% url 'add_supplier' %}">
+            {% csrf_token %}
+            <input type="text" name="code" placeholder="Code" required>
+            <input type="text" name="name" placeholder="Name" required>
+            <input type="text" name="address" placeholder="Address" required>
+            <input type="text" name="contact" placeholder="Contact" required>
+            <input type="email" name="email" placeholder="Email" required>
+            <button type="submit" class="btn btn-add">Add</button>
+            <button type="button" class="btn btn-delete" onclick="closeForm('addForm')">Cancel</button>
+        </form>
+    </div>
+
+    <!-- Edit Supplier Form -->
+    <div class="form-popup" id="editForm">
+        <h3>Edit Supplier</h3>
+        <form method="POST" action="" id="editFormAction">
+            {% csrf_token %}
+            <input type="hidden" name="supplier_id" id="editSupplierId">
+            <input type="text" name="code" id="editCode" required>
+            <input type="text" name="name" id="editName" required>
+            <input type="text" name="address" id="editAddress" required>
+            <input type="text" name="contact" id="editContact" required>
+            <input type="email" name="email" id="editEmail" required>
+            <button type="submit" class="btn btn-edit">Update</button>
+            <button type="button" class="btn btn-delete" onclick="closeForm('editForm')">Cancel</button>
+        </form>
+    </div>
+
+    <!-- JavaScript Section -->
+    <script>
+        // Show Add Form
+        function showAddForm() {
+            document.getElementById('addForm').style.display = 'block';
+        }
+
+        // Show Edit Form with Pre-filled Values
+        function showEditForm(id, code, name, address, contact, email) {
+            document.getElementById('editForm').style.display = 'block';
+            document.getElementById('editSupplierId').value = id;
+            document.getElementById('editCode').value = code;
+            document.getElementById('editName').value = name;
+            document.getElementById('editAddress').value = address;
+            document.getElementById('editContact').value = contact;
+            document.getElementById('editEmail').value = email;
+            document.getElementById('editFormAction').action = `/suppliers/update/${id}/`;
+        }
+
+        // Close Form (Add or Edit)
+        function closeForm(formId) {
+            document.getElementById(formId).style.display = 'none';
+        }
+
+        // Confirm Delete Supplier with SweetAlert
+        function confirmDelete(supplierId) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "This action cannot be undone!",
+                icon: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#d33",
+                confirmButtonText: "Yes, delete it!"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = `/suppliers/delete/${supplierId}/`;
+                }
+            });
+        }
+    </script>
+
+</body>
+
+</html>

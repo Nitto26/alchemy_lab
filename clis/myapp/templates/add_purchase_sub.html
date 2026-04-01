@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Purchase Item</title>
+</head>
+<body>
+
+    <h2>Add Item to Purchase {{ purchase.purchase_no }}</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+        <label for="code">Item Code:</label>
+        <input type="text" name="code" required />
+    
+        <label for="name_of_item">Item Name:</label>
+        <input type="text" name="name_of_item" required>
+    
+        <label for="quantity">Quantity:</label>
+        <input type="number" name="quantity" required>
+    
+        <label for="nos">Nos:</label>
+        <input type="number" name="nos" required>
+    
+        <label for="rate">Rate:</label>
+        <input type="number" step="0.01" name="rate" required>
+    
+        <label for="cgst_rate">CGST Rate (%):</label>
+        <input type="number" step="0.01" name="cgst_rate" required>
+    
+        <label for="sgst_rate">SGST Rate (%):</label>
+        <input type="number" step="0.01" name="sgst_rate" required>
+    
+        <button type="submit">Save</button>
+        <a href="{% url 'purchase_detail' purchase.id %}">Cancel</a>
+    </form>
+    
+
+</body>
+</html>

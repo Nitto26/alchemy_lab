@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f8f9fa;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: #007bff;
+        }
+        /* Button Styles */
+        .btn {
+            padding: 10px 15px;
+            text-decoration: none;
+            color: white;
+            border-radius: 4px;
+            margin: 5px 5px;
+            display: inline-block;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        .btn-add, .btn-promote, .btn-add-dept, .btn-add-course {
+            background-color: #17a2b8;
+        }
+        .btn-secondary {
+            background-color: #6c757d;
+        }
+        .btn-edit {
+            background-color: #ffc107;
+        }
+        .btn-delete {
+            background-color: #dc3545;
+        }
+        .btn:hover {
+            opacity: 0.9;
+        }
+        .btn-back {
+            background-color: #6c757d;
+        }
+
+        /* Search & Filter */
+        .search-box {
+            width: 300px;
+            padding: 8px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .filter-btn {
+            padding: 8px 12px;
+            background-color: #6c757d;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            margin-right: 5px;
+            cursor: pointer;
+        }
+        .filter-btn:hover {
+            background-color: #495057;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background-color: white;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        th, td {
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            text-align: center;
+        }
+        th {
+            background-color: #343a40;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+        .modal-content {
+            background-color: white;
+            margin: 10% auto;
+            padding: 20px;
+            border-radius: 8px;
+            width: 40%;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+        .modal-content h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        .modal-content input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        .modal-content button {
+            background-color: #17a2b8;
+            padding: 10px 15px;
+            border: none;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .modal-content button:hover {
+            background-color: #218838;
+        }
+
+        /* Responsive Styles */
+        @media screen and (max-width: 768px) {
+            .modal-content {
+                width: 90%;
+            }
+            table {
+                width: 100%;
+                overflow-x: auto;
+                display: block;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Student List</h2>
+
+    <!-- Back Button -->
+    <a href="javascript:history.back()" class="btn btn-back">⬅️ Back</a>
+
+    <!-- Action Buttons -->
+    <a href="{% url 'student_add' %}" class="btn btn-add">➕ Add Student</a>
+    <a href="{% url 'promote_students' %}" class="btn btn-promote" onclick="return confirm('Are you sure you want to promote all students to the next academic year?');">
+        ⏭️ Next Academic Year
+    </a>
+
+    <!-- Search Box -->
+    <input type="text" id="search" class="search-box" placeholder="Search by Name, Admission No, or Roll No" onkeyup="searchTable()">
+
+    <!-- Filter Buttons -->
+     <br>
+    <button class="btn filter-btn" onclick="filterTable('course')">📚 Filter by Course</button>
+    <button class="btn filter-btn" onclick="filterTable('department')">🏢 Filter by Department</button>
+    <button class="btn filter-btn" onclick="filterTable('status')">✅ Filter by Status</button>
+    <button class="btn filter-btn" onclick="showAll()">🔄 Show All</button>
+<!-- Upload Excel File -->
+<form id="uploadForm" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <input type="file" id="excelFile" name="excelFile" accept=".xlsx, .xls" required>
+    <button type="submit" class="btn btn-add">📤 Upload Excel</button>
+</form>
+
+<script>
+    document.getElementById("uploadForm").addEventListener("submit", function (e) {
+        e.preventDefault();
+        let formData = new FormData(this);
+
+        fetch("{% url 'upload_students' %}", {
+            method: "POST",
+            body: formData,
+        })
+        .then(response => response.json())
+        .then(data => {
+            alert(data.message);
+            if (data.success) {
+                location.reload();
+            }
+        })
+        .catch(error => console.error("Error:", error));
+    });
+</script>
+
+    <!-- Student Table -->
+    <table id="studentTable">
+        <thead>
+            <tr>
+                <th>Serial No</th>
+                
+                <th>Adm_no</th>
+                <th>Name</th>
+                <th>Department <button class="btn-add-dept" onclick="openModal('deptModal')">➕</button></th>
+                <th>Course Type <button class="btn-add-course" onclick="openModal('courseModal')">➕</button></th>
+                <th>Year</th>
+                <th>Batch</th>
+                <th>Roll No</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr class="student-row" data-course="{{ student.course_type.name }}" data-department="{{ student.department.name }}" data-status="{{ student.get_status_display }}">
+                <td>{{ forloop.counter }}</td> <!-- Display serial number -->
+                
+                <td>{{ student.admission_no }}</td>
+                <td>{{ student.name }}</td>
+                <td>{{ student.department.name }}</td>
+                <td>{{ student.course_type.name }}</td>
+                <td>{{ student.year }}</td>
+                <td>{{ student.batch }}</td>
+                <td>{{ student.roll_no }}</td>
+                <td>{{ student.get_status_display }}</td>
+                <td>
+                    <a href="{% url 'student_edit' student.id %}" class="btn btn-edit">✏️ </a>
+                    <a href="{% url 'student_delete' student.id %}" class="btn btn-delete" onclick="return confirm('Are you sure?');">🗑️</a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="11">No students found.</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Add Department Modal -->
+    <div id="deptModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Department</h3>
+            <input type="text" id="deptName" placeholder="Enter Department Name">
+            <button onclick="addDepartment()">✅ Add Department</button>
+        </div>
+    </div>
+
+    <!-- Add Course Type Modal -->
+    <div id="courseModal" class="modal">
+        <div class="modal-content">
+            <h3>Add New Course Type</h3>
+            <input type="text" id="courseName" placeholder="Enter Course Type Name">
+            <button onclick="addCourseType()">✅ Add Course Type</button>
+        </div>
+    </div>
+
+    <script>
+        // Open modal
+        function openModal(modalId) {
+            document.getElementById(modalId).style.display = 'block';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.style.display = 'none';
+            }
+        }
+
+        // Add Department AJAX
+        function addDepartment() {
+            var deptName = document.getElementById('deptName').value;
+            if (deptName.trim() === '') {
+                alert('Please enter a department name');
+                return;
+            }
+            $.ajax({
+                url: "{% url 'add_department' %}",
+                method: "POST",
+                data: {
+                    'name': deptName,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    alert('Department added successfully!');
+                    location.reload();
+                }
+            });
+        }
+
+        // Add Course Type AJAX
+        function addCourseType() {
+            var courseName = document.getElementById('courseName').value;
+            if (courseName.trim() === '') {
+                alert('Please enter a course type');
+                return;
+            }
+            $.ajax({
+                url: "{% url 'add_course_type' %}",
+                method: "POST",
+                data: {
+                    'name': courseName,
+                    'csrfmiddlewaretoken': '{{ csrf_token }}'
+                },
+                success: function(response) {
+                    alert('Course type added successfully!');
+                    location.reload();
+                }
+            });
+        }
+
+        // Search Function
+        function searchTable() {
+            let input = document.getElementById("search").value.toLowerCase();
+            let rows = document.querySelectorAll("#studentTable tbody tr");
+
+            rows.forEach(row => {
+                let name = row.cells[2].textContent.toLowerCase();
+                let admissionNo = row.cells[1].textContent.toLowerCase();
+                let rollNo = row.cells[7].textContent.toLowerCase();
+
+                row.style.display = (name.includes(input) || admissionNo.includes(input) || rollNo.includes(input)) ? "" : "none";
+            });
+        }
+
+        // Filter Function
+        function filterTable(type) {
+            let filterValue = prompt(`Enter a value to filter by ${type.charAt(0).toUpperCase() + type.slice(1)}`).toLowerCase();
+            let rows = document.querySelectorAll("#studentTable tbody tr");
+
+            rows.forEach(row => {
+                let dataValue = row.getAttribute(`data-${type}`).toLowerCase();
+                row.style.display = dataValue.includes(filterValue) ? "" : "none";
+            });
+        }
+
+        // Show All Records
+        function showAll() {
+            let rows = document.querySelectorAll("#studentTable tbody tr");
+            rows.forEach(row => row.style.display = "");
+            document.getElementById('search').value = "";
+        }
+    </script>
+
+</body>
+</html>

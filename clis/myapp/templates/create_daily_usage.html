@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Daily Usage</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 500px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); margin: auto; }
+        h2 { text-align: center; color: #333; }
+        form { display: flex; flex-direction: column; }
+        label { font-weight: bold; margin-top: 10px; }
+        input, select { padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 5px; width: 100%; }
+        button { margin-top: 20px; padding: 10px; border: none; background: #28a745; color: white; font-size: 16px; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #218838; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Add Daily Usage</h2>
+    <form method="post">
+        {% csrf_token %}
+        
+        <label for="id_item">Chemical Name & Code:</label>
+        {{ form.item }}
+    
+        <label for="id_quantity">Quantity Used (Ml/Gm):</label>
+        {{ form.quantity }}
+    
+        <label for="id_batch">Batch :</label>
+        {{ form.batch }}
+    
+        <button type="submit">Submit</button>
+    </form>
+    
+</div>
+
+</body>
+</html>

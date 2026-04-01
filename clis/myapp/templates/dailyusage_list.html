@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Usage List</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert for Alerts -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Bootstrap for Styling -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+
+    <style>
+        /* General Styles */
+        * {
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            padding: 20px;
+            background-color: #f8f9fa;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .back-btn i {
+            margin-right: 8px;
+        }
+
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Add Button Styles */
+        .btn-add {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            border: none;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .btn-add:hover {
+            background-color: #0056b3;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #343a40;
+            color: #fff;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-edit {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .btn-delete {
+            background-color: #dc3545;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+        }
+
+        /* Empty State for Table */
+        .empty-state {
+            text-align: center;
+            padding: 12px;
+            color: #888;
+        }
+
+        /* Form Styles */
+        .form-container {
+            display: none;
+            margin-top: 30px;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <!-- Back Button with JS -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <h2><i class="fas fa-list"></i> Daily Usage List</h2>
+
+        <!-- Add Usage Button -->
+        <a href="{% url 'usage_add'%}" class="btn btn-edit">Add Usage</a>
+
+        <!-- Usage Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>No:</th>
+                    
+                    <th>Item</th>
+                    <th>Quantity(gm/ml)</th>
+                    <th>Batch</th>
+                    <th>Date</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for usage in usages %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    
+                    <td>{{ usage.item.chem_id.name }} - {{ usage.item.code }}</td>
+                    <td>{{ usage.quantity }}</td>
+                    <td>{{ usage.batch }}</td>
+                    <td>{{ usage.date }}</td>
+                    <td>
+                        <a href="{% url 'usage_edit' usage.usage_id %}" class="btn btn-edit">✏️ </a>
+                        <button class="btn btn-delete" data-usage-id="{{ usage.usage_id }}" onclick="confirmDelete(this)">
+                            <i class="fas fa-trash-alt"></i> 
+                        </button>
+                        
+                        
+                        
+                        
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="empty-state">
+                        No usage data available.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+
+    <!-- JavaScript Section -->
+    <script>
+
+        // Confirm Delete Usage with SweetAlert
+        // Confirm Delete Usage with SweetAlert
+function confirmDelete(button) {
+    var usageId = button.getAttribute('data-usage-id');
+    
+    Swal.fire({
+        title: "Are you sure?",
+        text: "This action cannot be undone!",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+    }).then((result) => {
+        if (result.isConfirmed) {
+            window.location.href = `/dailyusage_delete/${usageId}/`;  // Redirect to the correct URL
+        }
+    });
+}
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Purchase Details</title>
+    <!-- Font Awesome for Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+        .back-btn i {
+            margin-right: 8px;
+        }
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: center;
+        }
+        th {
+            background-color: #343a40;
+            color: #fff;
+            cursor: pointer;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Buttons */
+        button, a {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            text-decoration: none;
+        }
+        button {
+            background-color: #007bff;;
+            color: white;
+        }
+        button:hover {
+            background-color: #0056b3;
+        }
+        .delete-btn {
+            color: #dc3545;
+        }
+        .delete-btn:hover {
+            background-color: #c82333;
+        }
+        .edit-btn {
+            color: #ffc107;
+        }
+        .edit-btn:hover {
+            background-color: #e0a800;
+        }
+
+        /* Upload Form */
+        .upload-form {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .upload-form input[type="file"] {
+            margin-right: 10px;
+        }
+
+        /* Add Item Form */
+        #addSubForm {
+            display: none;
+            background: #fff;
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 50%;
+            margin: 20px auto;
+        }
+        #addSubForm h3 {
+            margin-top: 0;
+            color: #333;
+        }
+        #addSubForm form {
+            display: flex;
+            flex-direction: column;
+        }
+        #addSubForm form input, #addSubForm form button {
+            margin-top: 10px;
+            padding: 8px;
+        }
+
+        /* Empty State for Items */
+        .empty-state {
+            text-align: center;
+            padding: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- Back Button -->
+        <a href="{% url 'purchase_list' %}" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back to Purchases
+        </a>
+
+        <!-- Page Heading -->
+        <h2><i class="fas fa-file-invoice"></i> Purchase Details for {{ purchase.purchase_no }}</h2>
+
+        <!-- Add Item Button -->
+        <button onclick="document.getElementById('addSubForm').style.display='block'">
+            <i class="fas fa-plus"></i> Add Item
+        </button>
+
+        <!-- Upload Excel Form -->
+        <div class="upload-form">
+            <form method="POST" action="{% url 'upload_excel' purchase.purchase_id %}" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="excel_file" accept=".xls, .xlsx" required>
+                <button type="submit">
+                    <i class="fas fa-upload"></i> Upload Excel
+                </button>
+            </form>
+        </div>
+
+        <!-- Items Table -->
+        <table id="itemsTable">
+            <thead>
+                <tr>
+                    <th>Item Code</th>
+                    <th>Item Name</th>
+                    <th>Quantity (Gm/Ml)</th>
+                    <th>Nos</th>
+                    <th>Rate</th>
+                    <th>CGST</th>
+                    <th>SGST</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in sub_items %}
+                <tr>
+                    <td>{{ item.code }}</td>
+                    <td>{{ item.name_of_item }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.nos }}</td>
+                    <td>₹{{ item.rate }}</td>
+                    <td>{{ item.cgst_amount }}%</td>
+                    <td>{{ item.sgst_amount }}%</td>
+                    <td>
+                        <!-- Edit Button -->
+                        <a href="{% url 'edit_purchase' item.id %}" class="edit-btn">
+                            <i class="fas fa-edit"></i> Edit
+                        </a> |
+                        <!-- Delete Button -->
+                        <a href="{% url 'delete_purchase' item.id %}" class="delete-btn" onclick="return confirmDelete('{{ item.name_of_item }}')">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="8" class="empty-state">
+                        No items found for this purchase.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Add Purchase Sub Form (Hidden) -->
+        <div id="addSubForm">
+            <h3>Add Item</h3>
+            <form method="POST" action="{% url 'add_purchase_sub' purchase.purchase_id %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button type="button" class="delete-btn" onclick="document.getElementById('addSubForm').style.display='none'">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript for Confirm Delete, Sort & Search -->
+    <script>
+        // Confirm Delete
+        function confirmDelete(itemName) {
+            return confirm(`Are you sure you want to delete '${itemName}'? This action cannot be undone.`);
+        }
+
+        // Search Functionality
+        function searchTable() {
+            let input = document.getElementById('search').value.toLowerCase();
+            let table = document.getElementById('itemsTable');
+            let rows = table.getElementsByTagName('tr');
+
+            for (let i = 1; i < rows.length; i++) {
+                let itemCode = rows[i].getElementsByTagName('td')[0]?.innerText.toLowerCase();
+                let itemName = rows[i].getElementsByTagName('td')[1]?.innerText.toLowerCase();
+
+                if (itemCode.includes(input) || itemName.includes(input)) {
+                    rows[i].style.display = '';
+                } else {
+                    rows[i].style.display = 'none';
+                }
+            }
+        }
+
+        // Sort Table by Item Name (Ascending Order)
+        function sortTable(columnIndex) {
+            let table = document.getElementById('itemsTable');
+            let rows = Array.from(table.rows).slice(1); // Skip header row
+            let sortedRows = rows.sort((a, b) => {
+                let cellA = a.cells[columnIndex].innerText.toLowerCase();
+                let cellB = b.cells[columnIndex].innerText.toLowerCase();
+                return cellA.localeCompare(cellB);
+            });
+
+            // Clear current rows
+            for (let i = 1; i < table.rows.length; i++) {
+                table.deleteRow(1);
+            }
+
+            // Append sorted rows
+            for (let row of sortedRows) {
+                table.appendChild(row);
+            }
+        }
+    </script>
+
+</body>
+</html>

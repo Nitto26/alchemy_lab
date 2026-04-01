@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ fine.name }} - Fine Details</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+
+    <style>
+        /* General Styles */
+        body {
+            background-color: #f8f9fa;
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            max-width: 900px;
+            margin: 40px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2, h3 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+        }
+        .back-btn i {
+            margin-right: 8px;
+        }
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Add Button */
+        .btn-primary {
+            background-color: #007bff;
+            border: none;
+            padding: 10px 16px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            margin-bottom: 15px;
+            display: inline-block;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+        }
+
+        /* Edit/Delete Buttons */
+        .btn-warning {
+            background-color: #ffc107;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-warning:hover {
+            background-color: #e0a800;
+        }
+        .btn-danger {
+            background-color: #dc3545;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            cursor: pointer;
+        }
+        .btn-danger:hover {
+            background-color: #c82333;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #343a40;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Fine Summary */
+        .fine-summary p {
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        /* Form Container */
+        .form-container {
+            background-color: #f8f9fa;
+            padding: 20px;
+            margin-top: 20px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            display: none; /* Hidden by default */
+        }
+
+        /* Form Buttons */
+        .form-btn {
+            padding: 8px 14px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s ease;
+        }
+        .btn-save {
+            background-color: #28a745;
+            color: white;
+        }
+        .btn-save:hover {
+            background-color: #218838;
+        }
+        .btn-cancel {
+            background-color: #dc3545;
+            color: white;
+        }
+        .btn-cancel:hover {
+            background-color: #c82333;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <!-- Back Button -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <!-- Fine Summary -->
+        <h2><i class="fas fa-file-invoice-dollar"></i> Fine Details for {{ fine.name }}</h2>
+
+        <div class="fine-summary">
+            <p><strong>Admission No:</strong> {{ fine.admission_no.admission_no }}</p>
+            <p><strong>Department:</strong> {{ fine.department }}</p>
+            <p><strong>Year:</strong> {{ fine.year }}</p>
+            <p><strong>Total Amount:</strong> ₹{{ fine.total }}</p>
+            <p><strong>Status:</strong>
+                {% if fine.status == 'paid' %}
+                    <span style="color: green;"><i class="fas fa-check-circle"></i> Paid</span>
+                {% else %}
+                    <span style="color: red;"><i class="fas fa-times-circle"></i> Unpaid</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <h3><i class="fas fa-boxes"></i> Fine Items</h3>
+
+        <!-- Add FineSub Button -->
+        <button class="btn-primary" onclick="document.getElementById('addSubForm').style.display='block'">
+            <i class="fas fa-plus"></i> Add Fine Item
+        </button>
+
+        <!-- FineSub Table -->
+        <table>
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Item Name</th>
+                    <th>Price</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in sub_items %}
+                <tr>
+                    <td>{{ item.date }}</td>
+                    <td>{{ item.item_name }}</td>
+                    <td>₹{{ item.price }}</td>
+                    <td>
+                        <a href="{% url 'edit_fine_sub' item.id %}" class="btn-warning">
+                            <i class="fas fa-edit"></i> Edit
+                        </a>
+                        <a href="{% url 'delete_fine_sub' item.id %}" class="btn-danger" onclick="return confirm('Are you sure?')">
+                            <i class="fas fa-trash"></i> Delete
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="text-center">No fine items available.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- Add FineSub Form (Hidden by Default) -->
+        <div id="addSubForm" class="form-container">
+            <h3><i class="fas fa-pen"></i> Add Fine Item</h3>
+            <form method="POST" action="{% url 'add_fine_sub' fine.id %}">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="form-btn btn-save">
+                    <i class="fas fa-save"></i> Save
+                </button>
+                <button type="button" class="form-btn btn-cancel" onclick="document.getElementById('addSubForm').style.display='none'">
+                    <i class="fas fa-times"></i> Cancel
+                </button>
+            </form>
+        </div>
+
+    </div>
+
+</body>
+</html>

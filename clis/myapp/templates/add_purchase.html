@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Purchase</title>
+    <script>
+        function addSubItemRow() {
+            let container = document.getElementById("sub-items-container");
+            let row = document.createElement("div");
+            row.className = "sub-item-row";
+            row.innerHTML = `
+                <input type="text" name="code_of_item" placeholder="Item Code" required>
+                <input type="text" name="name_of_item" placeholder="Item Name" required>
+                <input type="number" name="quantity" placeholder="Quantity" required>
+                <input type="number" name="nos" placeholder="Nos" required>
+                <input type="number" name="rate" step="0.01" placeholder="Rate" required>
+                <input type="number" name="cgst_rate" step="0.01" placeholder="CGST %" required>
+                <input type="number" name="sgst_rate" step="0.01" placeholder="SGST %" required>
+                <button type="button" onclick="removeRow(this)">Remove</button>
+            `;
+            container.appendChild(row);
+        }
+
+        function removeRow(button) {
+            button.parentElement.remove();
+        }
+    </script>
+</head>
+<body>
+
+    <h2>Add Purchase</h2>
+
+    <form method="POST">
+        {% csrf_token %}
+
+        <!-- Purchase Form -->
+        <h3>Purchase Details</h3>
+        {{ purchase_form.as_p }}
+
+        <hr>
+
+        <!-- PurchaseSub Formset -->
+        <h3>Purchase Sub Details</h3>
+        <div id="sub-items-container">
+            {{ formset.management_form }}
+            {% for form in formset %}
+                <div class="sub-item-row">
+                    {{ form.as_p }}
+                </div>
+            {% endfor %}
+        </div>
+        
+        <button type="button" onclick="addSubItemRow()">+ Add Item</button>
+
+        <br><br>
+        <button type="submit">Save</button>
+        <a href="{% url 'purchase_list' %}"><button type="button">Cancel</button></a>
+
+    </form>
+
+</body>
+</html>

@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Daily Usages</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f4; padding: 20px; }
+        .container { max-width: 800px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); margin: auto; }
+        h2 { text-align: center; color: #333; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        th { background: #28a745; color: white; }
+        .btn { padding: 5px 10px; border: none; color: white; cursor: pointer; border-radius: 5px; }
+        .approve { background: #28a745; }
+        .discard { background: #dc3545; }
+        .approve:hover { background: #218838; }
+        .discard:hover { background: #c82333; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Pending Daily Usages</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Usage ID</th>
+                <th>Date</th>
+                <th>Time</th>
+                <th>Item</th>
+                <th>Quantity</th>
+                <th>Batch</th>
+                
+            </tr>
+        </thead>
+        <tbody>
+            {% for usage in pending_usages %}
+            <tr>
+                <td>{{ usage.usage_id }}</td>
+                <td>{{ usage.date }}</td>
+                <td>{{ usage.time }}</td>
+                <td>{{ usage.item.chem_id.name }} - {{ usage.item.code }}</td>
+                <td>{{ usage.quantity }}</td>
+                <td>{{ usage.batch }}</td>
+                
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

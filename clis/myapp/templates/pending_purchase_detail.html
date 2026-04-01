@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pending Purchase Request Details</title>
+    {% load static %}
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* General Styles */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        p {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 12px;
+        }
+        strong {
+            color: #555;
+        }
+
+        /* Back Button */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            margin-bottom: 20px;
+            color: #007bff;
+            text-decoration: none;
+            font-size: 16px;
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+        .back-btn i {
+            margin-right: 8px;
+        }
+        .back-btn:hover {
+            color: #0056b3;
+        }
+
+        /* Table Styles */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #343a40;
+            color: #fff;
+        }
+        tr:nth-child(even) {
+            background-color: #f2f2f2;
+        }
+        tr:hover {
+            background-color: #e9ecef;
+        }
+
+        /* Status Styles */
+        .status-approved {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .status-pending {
+            color: #dc3545;
+            font-weight: bold;
+        }
+
+        /* Empty State for Items */
+        .empty-state {
+            text-align: center;
+            padding: 12px;
+            color: #888;
+        }
+
+        /* Heading for Items Section */
+        h3 {
+            margin-top: 30px;
+            font-size: 20px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Main Container -->
+    <div class="container">
+
+        <!-- Back Button -->
+        <a href="javascript:history.back()" class="back-btn">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+
+        <!-- Page Heading -->
+        <h2><i class="fas fa-file-invoice"></i> Purchase Details: {{ purchase.purchase_no }}</h2>
+
+        <!-- Purchase Info -->
+        <p><strong>Supplier:</strong> {{ purchase.supplier_code }}</p>
+        <p><strong>Date:</strong> {{ purchase.date }}</p>
+        <p><strong>Invoice No:</strong> {{ purchase.invoice_no }}</p>
+        <p><strong>Total Amount:</strong> ₹{{ purchase.total_amount }}</p>
+        <p><strong>Status:</strong> 
+            {% if purchase.status == 'Approved' %}
+                <span class="status-approved">{{ purchase.status }}</span>
+            {% else %}
+                <span class="status-pending">{{ purchase.status }}</span>
+            {% endif %}
+        </p>
+
+        <!-- Items Section -->
+        <h3><i class="fas fa-boxes"></i> Items</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Item ID</th>
+                    <th>Code</th>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Nos</th>
+                    <th>Rate</th>
+                    <th>Amount</th>
+                    <th>CGST %</th>
+                    <th>SGST %</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in purchase.pending_items.all %}
+                <tr>
+                    <td>{{ item.id }}</td>
+                    <td>{{ item.code }}</td>
+                    <td>{{ item.name_of_item }}</td>
+                    <td>{{ item.quantity }}</td>
+                    <td>{{ item.nos }}</td>
+                    <td>₹{{ item.rate }}</td>
+                    <td>₹{{ item.total_amount }}</td>
+                    <td>{{ item.cgst_rate }}%</td>
+                    <td>{{ item.sgst_rate }}%</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="9" class="empty-state">
+                        No items found for this purchase.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+    </div>
+
+</body>
+</html>
