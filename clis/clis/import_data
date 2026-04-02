@@ -1,0 +1,88 @@
+import os
+import django
+import pandas as pd
+
+# 1. Setup Django Environment
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'clis.settings')
+django.setup()
+
+# Import your models
+from myapp.models import Chemical, ChemicalSub, Item, ItemSub
+
+def import_chemicals():
+    print("--- Importing Chemicals ---")
+    # Update this path to match your actual file name
+    file_path = 'legacy_data/CHEMISTRY CHEMICALS STORE REGISTER orginal.xlsx - STOCK DETAILS OF CHEMICALS.csv'
+    
+    # Read the CSV. Skipping the first row because row 2 has the actual headers
+    df = pd.read_csv(file_path, skiprows=1)
+    
+    # Clean the dataframe (drop empty names)
+    df = df.dropna(subset=['CHEMICALS PASSWORD123'])
+
+    for index, row in df.iterrows():
+        chem_code = str(row['CHEMICAL NO:']).strip()
+        chem_name = str(row['CHEMICALS PASSWORD123']).strip()
+        
+        # We assume if the code starts with 'OR', it's Organic, else Inorganic
+        category = 'Organic' if 'OR CHEM' in chem_code else 'Inorganic'
+
+        # 1. Create or get the master Chemical
+        chemical, created = Chemical.objects.get_or_create(
+            name=chem_name,
+            defaults={'category': category, 'minimum_amount': 100} # Default min amount
+        )
+        if created:
+            print(f"Created Chemical: {chem_name}")
+
+        # 2. Add the sub-batch (ChemicalSub)
+        # Using the 'GMS' or 'BALANCE TOTAL KG' column to figure out stock
+        total_kg = pd.to_numeric(row[' BALANCE TOTAL KG'], errors='coerce')
+        if pd.notna(total_kg) and total_kg > 0:
+            quantity_gm = int(total_kg * 1000) # Convert KG to Grams
+            
+            ChemicalSub.objects.create(
+                chemical=chemical,
+                quantity=quantity_gm,
+                available_amount=quantity_gm,
+                state='Solid', # Defaulting to solid, adjust if needed
+                company='Legacy Stock',
+                fund='Legacy',
+            )
+            print(f"  -> Added {quantity_gm}g stock for {chem_name}")
+
+def import_glassware():
+    print("\n--- Importing Glassware (Items) ---")
+    file_path = 'legacy_data/CHEMISTRY GLASS WARE STORE REGISTER orginal.xlsx - 2020-23 DUES LIST.csv'
+    
+    # Read CSV, row 2 contains headers
+    df = pd.read_csv(file_path, skiprows=1)
+    df = df.dropna(subset=[' GLASSWARE PASSWORD123'])
+
+    for index, row in df.iterrows():
+        item_code = str(row['GLASS WARE NO:']).strip()
+        item_name = str(row[' GLASSWARE PASSWORD123']).strip()
+        
+        # Create master Item
+        item, created = Item.objects.get_or_create(
+            name=item_name,
+            defaults={'category': 'Glassware', 'type': 'Consumable'}
+        )
+        if created:
+            print(f"Created Item: {item_name}")
+
+        # Add the stock quantity
+        total_stock = pd.to_numeric(row[' BALANCE TOTAL KG'], errors='coerce')
+        if pd.notna(total_stock) and total_stock > 0:
+            for i in range(int(total_stock)):
+                ItemSub.objects.create(
+                    item=item,
+                    code=f"{item_code}-{i+1}", # e.g. ITS GL 01-1
+                    condition='Working'
+                )
+            print(f"  -> Added {int(total_stock)} units of {item_name}")
+
+if __name__ == '__main__':
+    import_chemicals()
+    import_glassware()
+    print("\n✅ Import Complete!")
