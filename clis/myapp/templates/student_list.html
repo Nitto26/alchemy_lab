@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
+{% load static %}
 <html>
 <head>
     <title>Student List</title>
@@ -70,7 +71,7 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            background-color: white;
+            background-color: #121a2b;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
         th, td {
@@ -101,7 +102,7 @@
             background-color: rgba(0, 0, 0, 0.5);
         }
         .modal-content {
-            background-color: white;
+            background-color: #121a2b;
             margin: 10% auto;
             padding: 20px;
             border-radius: 8px;
@@ -144,18 +145,19 @@
             }
         }
     </style>
+    <link rel="stylesheet" href="{% static 'css/app-modern.css' %}">
 </head>
 <body>
 
     <h2>Student List</h2>
 
     <!-- Back Button -->
-    <a href="javascript:history.back()" class="btn btn-back">⬅️ Back</a>
+    <a href="javascript:history.back()" class="btn btn-back">Back</a>
 
     <!-- Action Buttons -->
-    <a href="{% url 'student_add' %}" class="btn btn-add">➕ Add Student</a>
+    <a href="{% url 'student_add' %}" class="btn btn-add">Add Student</a>
     <a href="{% url 'promote_students' %}" class="btn btn-promote" onclick="return confirm('Are you sure you want to promote all students to the next academic year?');">
-        ⏭️ Next Academic Year
+        Next Academic Year
     </a>
 
     <!-- Search Box -->
@@ -163,15 +165,15 @@
 
     <!-- Filter Buttons -->
      <br>
-    <button class="btn filter-btn" onclick="filterTable('course')">📚 Filter by Course</button>
-    <button class="btn filter-btn" onclick="filterTable('department')">🏢 Filter by Department</button>
-    <button class="btn filter-btn" onclick="filterTable('status')">✅ Filter by Status</button>
-    <button class="btn filter-btn" onclick="showAll()">🔄 Show All</button>
+    <button class="btn filter-btn" onclick="filterTable('course')">Filter by Course</button>
+    <button class="btn filter-btn" onclick="filterTable('department')">Filter by Department</button>
+    <button class="btn filter-btn" onclick="filterTable('status')">Filter by Status</button>
+    <button class="btn filter-btn" onclick="showAll()">Show All</button>
 <!-- Upload Excel File -->
 <form id="uploadForm" method="POST" enctype="multipart/form-data">
     {% csrf_token %}
     <input type="file" id="excelFile" name="excelFile" accept=".xlsx, .xls" required>
-    <button type="submit" class="btn btn-add">📤 Upload Excel</button>
+    <button type="submit" class="btn btn-add">Upload Excel</button>
 </form>
 
 <script>
@@ -202,8 +204,8 @@
                 
                 <th>Adm_no</th>
                 <th>Name</th>
-                <th>Department <button class="btn-add-dept" onclick="openModal('deptModal')">➕</button></th>
-                <th>Course Type <button class="btn-add-course" onclick="openModal('courseModal')">➕</button></th>
+                <th>Department <button class="btn-add-dept" onclick="openModal('deptModal')">+</button></th>
+                <th>Course Type <button class="btn-add-course" onclick="openModal('courseModal')">+</button></th>
                 <th>Year</th>
                 <th>Batch</th>
                 <th>Roll No</th>
@@ -225,8 +227,8 @@
                 <td>{{ student.roll_no }}</td>
                 <td>{{ student.get_status_display }}</td>
                 <td>
-                    <a href="{% url 'student_edit' student.id %}" class="btn btn-edit">✏️ </a>
-                    <a href="{% url 'student_delete' student.id %}" class="btn btn-delete" onclick="return confirm('Are you sure?');">🗑️</a>
+                    <a href="{% url 'student_edit' student.id %}" class="btn btn-edit">Edit</a>
+                    <a href="{% url 'student_delete' student.id %}" class="btn btn-delete" onclick="return confirm('Are you sure?');">Delete</a>
                 </td>
             </tr>
             {% empty %}
@@ -242,7 +244,7 @@
         <div class="modal-content">
             <h3>Add New Department</h3>
             <input type="text" id="deptName" placeholder="Enter Department Name">
-            <button onclick="addDepartment()">✅ Add Department</button>
+            <button onclick="addDepartment()">Add Department</button>
         </div>
     </div>
 
@@ -251,7 +253,7 @@
         <div class="modal-content">
             <h3>Add New Course Type</h3>
             <input type="text" id="courseName" placeholder="Enter Course Type Name">
-            <button onclick="addCourseType()">✅ Add Course Type</button>
+            <button onclick="addCourseType()">Add Course Type</button>
         </div>
     </div>
 
@@ -345,3 +347,4 @@
 
 </body>
 </html>
+

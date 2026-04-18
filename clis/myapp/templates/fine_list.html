@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -18,7 +18,7 @@
         .container {
             max-width: 900px;
             margin: 40px auto;
-            background-color: #fff;
+            background-color: #121a2b;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -145,6 +145,7 @@
             background-color: #0056b3;
         }
     </style>
+    <link rel="stylesheet" href="{% static 'css/app-modern.css' %}">
 </head>
 
 <body>
@@ -202,7 +203,7 @@
                     <td>{{ fine.name }}</td>
                     <td>{{ fine.department }}</td>
                     <td>{{ fine.year }}</td>
-                    <td>₹{{ fine.total }}</td>
+                    <td>Rs {{ fine.total }}</td>
                     <td>
                         {% if fine.status == 'paid' %}
                         <span style="color: green;"><i class="fas fa-check-circle"></i> Paid</span>
@@ -275,3 +276,4 @@
 </body>
 
 </html>
+

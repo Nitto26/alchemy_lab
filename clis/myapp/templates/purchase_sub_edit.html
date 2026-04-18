@@ -1,6 +1,14 @@
-{% extends 'base.html' %}
-
-{% block content %}
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Purchase Sub-Item</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{% static 'css/app-modern.css' %}">
+</head>
+<body>
 <div class="container mt-5">
     <h2>Edit Purchase Sub-Item</h2>
     <form method="post">
@@ -12,4 +20,5 @@
         <a href="{% url 'purchase_detail' purchase_sub.purchase.id %}" class="btn btn-secondary">Cancel</a>
     </form>
 </div>
-{% endblock %}
+</body>
+</html>

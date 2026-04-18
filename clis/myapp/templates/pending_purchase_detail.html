@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -18,7 +18,7 @@
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background-color: #fff;
+            background-color: #121a2b;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -101,6 +101,7 @@
             color: #333;
         }
     </style>
+    <link rel="stylesheet" href="{% static 'css/app-modern.css' %}">
 </head>
 <body>
 
@@ -119,7 +120,7 @@
         <p><strong>Supplier:</strong> {{ purchase.supplier_code }}</p>
         <p><strong>Date:</strong> {{ purchase.date }}</p>
         <p><strong>Invoice No:</strong> {{ purchase.invoice_no }}</p>
-        <p><strong>Total Amount:</strong> ₹{{ purchase.total_amount }}</p>
+        <p><strong>Total Amount:</strong> Rs {{ purchase.total_amount }}</p>
         <p><strong>Status:</strong> 
             {% if purchase.status == 'Approved' %}
                 <span class="status-approved">{{ purchase.status }}</span>
@@ -152,8 +153,8 @@
                     <td>{{ item.name_of_item }}</td>
                     <td>{{ item.quantity }}</td>
                     <td>{{ item.nos }}</td>
-                    <td>₹{{ item.rate }}</td>
-                    <td>₹{{ item.total_amount }}</td>
+                    <td>Rs {{ item.rate }}</td>
+                    <td>Rs {{ item.total_amount }}</td>
                     <td>{{ item.cgst_rate }}%</td>
                     <td>{{ item.sgst_rate }}%</td>
                 </tr>
@@ -171,3 +172,4 @@
 
 </body>
 </html>
+

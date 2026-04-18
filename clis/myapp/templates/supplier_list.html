@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
+{% load static %}
 <html lang="en">
 
 <head>
@@ -24,7 +25,7 @@
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background: white;
+            background: #121a2b;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -135,7 +136,7 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: white;
+            background: #121a2b;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -149,6 +150,7 @@
             padding: 8px;
         }
     </style>
+    <link rel="stylesheet" href="{% static 'css/app-modern.css' %}">
 </head>
 
 <body>
@@ -202,8 +204,8 @@
                     <td>{{ supplier.contact }}</td>
                     <td>{{ supplier.email }}</td>
                     <td>
-                        <a href="{% url 'supplier_edit' supplier.supplier_id %}" class="btn btn-edit">✏️ </a><br><br>
-                        <a href="{% url 'supplier_delete' supplier.supplier_id %}" class="btn btn-delete" onclick="return confirm('Are you sure?');">🗑️ </a>
+                        <a href="{% url 'supplier_edit' supplier.supplier_id %}" class="btn btn-edit">Edit</a><br><br>
+                        <a href="{% url 'supplier_delete' supplier.supplier_id %}" class="btn btn-delete" onclick="return confirm('Are you sure?');">Delete</a>
                     </td>
                 </tr>
                 {% empty %}
@@ -292,3 +294,4 @@
 </body>
 
 </html>
+

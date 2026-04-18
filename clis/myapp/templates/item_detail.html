@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html>
 <head>
     <meta charset="UTF-8">
@@ -16,7 +16,7 @@
         .container {
             max-width: 900px;
             margin: 40px auto;
-            background-color: #fff;
+            background-color: #121a2b;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -106,6 +106,7 @@
             background-color: #e9ecef;
         }
     </style>
+    <link rel="stylesheet" href="{% static 'css/app-modern.css' %}">
 </head>
 <body>
 
@@ -150,7 +151,7 @@
                     <td>{{ sub.company }}</td>
                     <td>{{ sub.fund }}</td>
                     <td>{{ sub.condition }}</td>
-                    <td>₹{{ sub.price }}</td>
+                    <td>Rs {{ sub.price }}</td>
                     <td>
                         <a href="{% url 'itemsub_edit' sub.id %}" class="btn-warning">
                             <i class="fas fa-edit"></i> Edit
@@ -171,3 +172,4 @@
 
 </body>
 </html>
+

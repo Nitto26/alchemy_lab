@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
+{% load static %}
 <html lang="en">
 
 <head>
@@ -26,7 +27,7 @@
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background: white;
+            background: #121a2b;
             padding: 20px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -140,6 +141,7 @@
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
     </style>
+    <link rel="stylesheet" href="{% static 'css/app-modern.css' %}">
 </head>
 
 <body>
@@ -178,7 +180,7 @@
                     <td>{{ usage.batch }}</td>
                     <td>{{ usage.date }}</td>
                     <td>
-                        <a href="{% url 'usage_edit' usage.usage_id %}" class="btn btn-edit">✏️ </a>
+                        <a href="{% url 'usage_edit' usage.usage_id %}" class="btn btn-edit">Edit</a>
                         <button class="btn btn-delete" data-usage-id="{{ usage.usage_id }}" onclick="confirmDelete(this)">
                             <i class="fas fa-trash-alt"></i> 
                         </button>
@@ -226,3 +228,4 @@ function confirmDelete(button) {
 </body>
 
 </html>
+

@@ -1,4 +1,5 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
+{% load static %}
 <html>
 <head>
     <title>Edit Student</title>
@@ -13,7 +14,7 @@
         .container {
             margin-top: 50px;
             max-width: 600px;
-            background-color: #fff;
+            background-color: #121a2b;
             padding: 30px;
             border-radius: 12px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -78,6 +79,7 @@
             margin-top: 20px;
         }
     </style>
+    <link rel="stylesheet" href="{% static 'css/app-modern.css' %}">
 </head>
 <body>
 
@@ -93,9 +95,10 @@
         </form>
 
         <div class="text-center">
-            <a href="{% url 'student_list' %}" class="back-link">🔙 Back to Student List</a>
+            <a href="{% url 'student_list' %}" class="back-link">Back to Student List</a>
         </div>
     </div>
 
 </body>
 </html>
+

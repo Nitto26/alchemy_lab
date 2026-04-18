@@ -25,7 +25,8 @@ SECRET_KEY = 'django-insecure-+m^w_@ie=(0#j$h=7b4^a+gi8x@v!xu2c4wi8*!%i@yax6exw+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['nitto.pythonanywhere.com']
+
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', 'nitto.pythonanywhere.com']
 
 
 # Application definition
@@ -77,12 +78,8 @@ WSGI_APPLICATION = 'clis.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME':'clis',
-        'USER':'root',
-        'PASSWORD':'Shantyjoshy@123',
-        'HOST':'localhost',
-        'PORT':'3306'
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
 

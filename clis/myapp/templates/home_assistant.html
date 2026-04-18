@@ -1,5 +1,6 @@
 
 <!DOCTYPE html>
+{% load static %}
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -7,174 +8,78 @@
     <title>Welcome to Alchemy Lab</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Poppins', sans-serif;
-        }
-
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            background-image: url('https://img.freepik.com/premium-photo/chemistry-lab-man-with-tablet-laboratory-with-generative-ai_1375-16930.jpg');
-            background-size: cover;
-            background-position: center;
-            min-height: 100vh;
-        }
-
-        /* Page Heading */
-        .heading {
-            margin-top: 20px;
-            color: #fff;
-            font-size: 48px;
-            font-weight: bold;
-            text-align: center;
-            text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.7);
-        }
-
-        /* Navbar */
-        .navbar {
-            margin-top: 20px;
-            width: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            padding: 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .navbar .links a {
-            color: #fff;
-            margin: 0 15px;
-            text-decoration: none;
-            transition: color 0.3s;
-        }
-
-        .navbar .links a:hover {
-            color: #28a745;
-        }
-
-        /* Right side container */
-        .right-icons {
-            display: flex;
-            align-items: center;
-            margin-right: 40px;
-        }
-
-        /* HOD Dropdown */
-        .hod-container {
-            position: relative;
-            margin-right: 20px;
-        }
-
-        .hod-icon {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: white;
-            font-size: 24px;
-        }
-
-        .hod-dropdown {
-            display: none;
-            position: absolute;
-            top: 35px;
-            right: 0;
-            background: #000;
-            color: white;
-            padding: 8px 12px;
-            border-radius: 5px;
-            font-size: 14px;
-            white-space: nowrap;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-        }
-
-        .hod-container:hover .hod-dropdown {
-            display: block;
-        }
-
-        /* Logout Button */
-        .logout-button {
-            background: none;
-            border: none;
-            cursor: pointer;
-        }
-
-        .logout-button span {
-            color: white;
-            font-size: 24px;
-            transition: transform 0.3s, color 0.3s;
-        }
-
-        .logout-button:hover span {
-            color: #dc3545;
-            transform: scale(1.2);
-        }
-
-        .graph-container {
-            width: 900px;
-            height: 400px;
-            margin-top: 30px;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'css/dashboard-modern.css' %}">
+    <link rel="stylesheet" href="{% static 'css/app-modern.css' %}">
 </head>
 <body>
+    <div class="dashboard-shell">
+        <div class="heading">Alchemy Lab</div>
 
-    <!-- Page Heading -->
-    <div class="heading">Alchemy Lab</div>
-
-    <!-- Navbar -->
-    <div class="navbar">
-        <div class="links">
-            <a href="{% url 'pending_purchase_assistant' %}">Add Purchase</a>
-
-            <a href="{% url 'supplier_list' %}">Supplier</a>
-            <a href="{% url 'purchase_list' %}">Purchase</a>
-            <a href="{% url 'chemical_list' %}">Chemicals</a>
-
-            <a href="{% url 'item_list' %}">Items</a>
-            <a href="{% url 'student_list' %}">Students</a>
-            <a href="{% url 'fine_list' %}">Fines</a>
-            <a href="{% url 'dailyusage_list' %}">Daily Usage</a>
-            <a href="{% url 'pending_usages_list' %}">Daily Usage Approve</a>
-            
-
-            
-        </div>
-
-        <!-- Right Icons (HOD + Logout) -->
-        <div class="right-icons">
-            <!-- HOD Icon with Dropdown -->
-            <div class="hod-container">
-                <button class="hod-icon">
-                    <span class="material-icons">person</span>
-                </button>
-                <div class="hod-dropdown">Assistant</div>
+        <div class="navbar">
+            <div class="links">
+                <a href="{% url 'pending_purchase_assistant' %}">Add Purchase</a>
+                <a href="{% url 'supplier_list' %}">Supplier</a>
+                <a href="{% url 'purchase_list' %}">Purchase</a>
+                <a href="{% url 'chemical_list' %}">Chemicals</a>
+                <a href="{% url 'item_list' %}">Items</a>
+                <a href="{% url 'student_list' %}">Students</a>
+                <a href="{% url 'fine_list' %}">Fines</a>
+                <a href="{% url 'dailyusage_list' %}">Daily Usage</a>
+                <a href="{% url 'pending_usages_list' %}">Daily Usage Approve</a>
             </div>
 
-            <!-- Logout Icon -->
-            <form id="logoutForm" action="{% url 'logout' %}" method="POST">
-                {% csrf_token %}
-                <button type="submit" class="logout-button">
-                    <span class="material-icons">exit_to_app</span>
-                </button>
-            </form>
+            <div class="right-icons">
+                <div class="hod-container">
+                    <button class="hod-icon" type="button">
+                        <span class="material-icons">person</span>
+                    </button>
+                    <div class="hod-dropdown">Assistant</div>
+                </div>
+
+                <form id="logoutForm" action="{% url 'logout' %}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="logout-button">
+                        <span class="material-icons">exit_to_app</span>
+                    </button>
+                </form>
+            </div>
         </div>
-    </div>
-    <!-- Graph Container -->
-    <div class="graph-container">
-        <canvas id="sampleChart"></canvas>
+
+        <div class="section-grid">
+            <div class="tiles">
+                <article class="tile">
+                    <p class="tile-label">Total Items</p>
+                    <p class="tile-value" id="tile-total">0</p>
+                    <span class="tile-chip total">Inventory</span>
+                </article>
+                <article class="tile">
+                    <p class="tile-label">Working</p>
+                    <p class="tile-value" id="tile-working">0</p>
+                    <span class="tile-chip work">Healthy</span>
+                </article>
+                <article class="tile">
+                    <p class="tile-label">Repair</p>
+                    <p class="tile-value" id="tile-repair">0</p>
+                    <span class="tile-chip repair">Checkup</span>
+                </article>
+                <article class="tile">
+                    <p class="tile-label">Damaged</p>
+                    <p class="tile-value" id="tile-damaged">0</p>
+                    <span class="tile-chip damage">Attention</span>
+                </article>
+            </div>
+
+            <div class="graph-container">
+                <div class="loader-overlay" id="chart-loader">
+                    <div class="loader"></div>
+                    <p class="loader-text">Loading analytics...</p>
+                </div>
+                <canvas id="sampleChart"></canvas>
+            </div>
+        </div>
     </div>
 
     <script>
-        // ✅ Fetch Data from API Correctly
         async function fetchData() {
             try {
                 const response = await fetch('/api/lab-item-status/');
@@ -189,35 +94,57 @@
             }
         }
 
-        // ✅ Initialize and Render Chart
+        function sumValues(values) {
+            return values.reduce((acc, value) => acc + Number(value || 0), 0);
+        }
+
+        function updateTiles(chartData) {
+            const working = sumValues(chartData.working || []);
+            const repair = sumValues(chartData.repair || []);
+            const damaged = sumValues(chartData.damaged || []);
+            const total = working + repair + damaged;
+
+            document.getElementById('tile-total').textContent = total;
+            document.getElementById('tile-working').textContent = working;
+            document.getElementById('tile-repair').textContent = repair;
+            document.getElementById('tile-damaged').textContent = damaged;
+        }
+
         async function initializeChart() {
+            const loader = document.getElementById('chart-loader');
             const chartData = await fetchData();
 
             if (!chartData) {
                 console.error('No data available to render the chart.');
+                loader.classList.add('hidden');
                 return;
             }
+
+            updateTiles(chartData);
 
             const ctx = document.getElementById('sampleChart').getContext('2d');
             new Chart(ctx, {
                 type: 'bar',
                 data: {
-                    labels: chartData.labels, // Dynamic categories
+                    labels: chartData.labels,
                     datasets: [
                         {
                             label: 'Working',
                             data: chartData.working,
-                            backgroundColor: '#28a745', // Green
+                            backgroundColor: '#39d98a',
+                            borderRadius: 8,
                         },
                         {
                             label: 'Repair',
                             data: chartData.repair,
-                            backgroundColor: '#ffc107', // Yellow
+                            backgroundColor: '#ffd166',
+                            borderRadius: 8,
                         },
                         {
                             label: 'Damaged',
                             data: chartData.damaged,
-                            backgroundColor: '#dc3545', // Red
+                            backgroundColor: '#ff6b7f',
+                            borderRadius: 8,
                         }
                     ]
                 },
@@ -227,23 +154,29 @@
                     scales: {
                         y: {
                             beginAtZero: true,
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.2)'
+                            },
                             title: {
                                 display: true,
                                 text: 'Count',
-                                color: '#333'
+                                color: '#f4f7ff'
                             },
                             ticks: {
-                                color: '#333'
+                                color: '#f4f7ff'
                             }
                         },
                         x: {
+                            grid: {
+                                color: 'rgba(255, 255, 255, 0.12)'
+                            },
                             title: {
                                 display: true,
                                 text: 'Categories',
-                                color: '#333'
+                                color: '#f4f7ff'
                             },
                             ticks: {
-                                color: '#333'
+                                color: '#f4f7ff'
                             }
                         }
                     },
@@ -251,17 +184,17 @@
                         legend: {
                             position: 'top',
                             labels: {
-                                color: '#333'
+                                color: '#f4f7ff'
                             }
                         }
                     }
                 }
             });
+
+            loader.classList.add('hidden');
         }
 
-        // ✅ Call the function to initialize the chart
         document.addEventListener('DOMContentLoaded', initializeChart);
     </script>
-    
 </body>
 </html>
