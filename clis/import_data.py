@@ -1,112 +1,265 @@
 import os
-import django
-import csv
+import io
+from pathlib import Path
+from decimal import Decimal
 
-# 1. Setup Django Environment
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'clis.settings')
+import django
+import openpyxl
+from django.db import transaction
+
+
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "clis.settings")
 django.setup()
 
-from myapp.models import Chemical, ChemicalSub, Item, ItemSub
+from myapp.models import Category, Chemical, ChemicalSub, Item, ItemSub
 
-def import_chemicals():
-    print("--- Importing Chemicals ---")
+
+BASE_DIR = Path(__file__).resolve().parent
+LEGACY_DIR = BASE_DIR / "legacy_data"
+
+
+def normalize_text(value):
+    if value is None:
+        return ""
+    return str(value).strip()
+
+
+def parse_int(value):
+    if value is None:
+        return 0
+    text = str(value).strip().replace(",", "")
+    if not text:
+        return 0
     try:
-        with open('legacy_data/chemicals.csv', 'r', encoding='latin1') as f:
-            reader = list(csv.reader(f))
-            name_idx, code_idx, kg_idx = -1, -1, -1
+        return int(float(text))
+    except ValueError:
+        return 0
 
-            # Step 1: Scan every row to find where the table actually starts
-            for r_idx, row in enumerate(reader):
-                clean_row = [str(c).strip().upper() for c in row]
-                for c_idx, cell in enumerate(clean_row):
-                    if 'PASSWORD123' in cell: name_idx = c_idx
-                    if 'CHEMICAL NO' in cell: code_idx = c_idx
-                    if 'BALANCE TOTAL' in cell or 'BALANCE' in cell: kg_idx = c_idx
-                
-                if name_idx != -1 and kg_idx != -1:
-                    start_row = r_idx + 1
-                    break
+
+def load_workbook_from_misnamed_xlsx(file_path):
+    # Files in legacy_data are xlsx content with .csv extension.
+    payload = io.BytesIO(file_path.read_bytes())
+    return openpyxl.load_workbook(payload, data_only=True, read_only=True)
+
+
+def find_header_row(ws, markers):
+    for row_idx in range(1, ws.max_row + 1):
+        row_values = [normalize_text(cell.value).upper() for cell in ws[row_idx]]
+        if all(any(marker in col for col in row_values) for marker in markers):
+            return row_idx
+    return None
+
+
+def chemical_total_quantity(row_values, start_col):
+    # Legacy sheet stores chemical stock in repeated pairs: [count, amount].
+    total = 0
+    col = start_col
+    while col + 1 < len(row_values):
+        count = parse_int(row_values[col])
+        amount = parse_int(row_values[col + 1])
+        if count > 0 and amount > 0:
+            total += count * amount
+        col += 2
+    return total
+
+
+@transaction.atomic
+def import_chemicals(file_name="chemicals.csv"):
+    file_path = LEGACY_DIR / file_name
+    if not file_path.exists():
+        raise FileNotFoundError(f"Missing file: {file_path}")
+
+    wb = load_workbook_from_misnamed_xlsx(file_path)
+    try:
+        sheet_name = "STOCK DETAILS OF CHEMICALS"
+        ws = wb[sheet_name] if sheet_name in wb.sheetnames else wb[wb.sheetnames[0]]
+
+        header_row = find_header_row(ws, ["CHEMICAL NO", "PASSWORD123"])
+        if header_row is None:
+            raise ValueError("Could not locate chemical header row")
+
+        headers = [normalize_text(c.value).upper() for c in ws[header_row]]
+        code_idx = next(i for i, h in enumerate(headers) if "CHEMICAL NO" in h)
+        name_idx = next(i for i, h in enumerate(headers) if "PASSWORD123" in h)
+        data_start = header_row + 1
+
+        created_chem = 0
+        updated_chem = 0
+        created_sub = 0
+        updated_sub = 0
+
+        for row in ws.iter_rows(min_row=data_start, values_only=True):
+            row_values = list(row)
+            if len(row_values) <= max(code_idx, name_idx):
+                continue
+
+            code = normalize_text(row_values[code_idx])
+            name = normalize_text(row_values[name_idx])
+            if not code or not name:
+                continue
+
+            if "CHEMICAL NO" in code.upper() or "PASSWORD123" in name.upper():
+                continue
+
+            category = "organic" if code.upper().startswith("OR") else "inorganic"
+
+            chemical, created = Chemical.objects.get_or_create(
+                name=name,
+                defaults={
+                    "location": "Legacy Stock",
+                    "category": category,
+                },
+            )
+            if created:
+                created_chem += 1
             else:
-                print("❌ Error: Could not find 'PASSWORD123' or 'BALANCE' columns in chemicals.csv")
-                return
+                changed = False
+                if not chemical.location:
+                    chemical.location = "Legacy Stock"
+                    changed = True
+                if chemical.category not in {"organic", "inorganic"}:
+                    chemical.category = category
+                    changed = True
+                if changed:
+                    chemical.save(update_fields=["location", "category"])
+                    updated_chem += 1
 
-            # Step 2: Process data from that point forward
-            for row in reader[start_row:]:
-                if len(row) > max(name_idx, kg_idx):
-                    chem_name = row[name_idx].strip()
-                    chem_code = row[code_idx].strip() if code_idx != -1 else ""
-                    kg_val = row[kg_idx].strip()
+            total_quantity = chemical_total_quantity(row_values, name_idx + 1)
+            if total_quantity <= 0:
+                continue
 
-                    if not chem_name or chem_name.upper() == 'NAN' or 'PASSWORD123' in chem_name.upper():
-                        continue
+            sub, sub_created = ChemicalSub.objects.update_or_create(
+                code=code,
+                defaults={
+                    "chem_id": chemical,
+                    "company": "Legacy Stock",
+                    "fund": "Legacy",
+                    "quantity": total_quantity,
+                    "nos": 1,
+                    "exp_date": None,
+                },
+            )
+            sub.total_quantity = sub.nos * sub.quantity
+            sub.save(update_fields=["total_quantity"])
 
-                    category = 'Organic' if 'OR' in chem_code.upper() else 'Inorganic'
-                    chemical, _ = Chemical.objects.get_or_create(
-                        name=chem_name, 
-                        defaults={'category': category, 'minimum_amount': 100}
+            if sub_created:
+                created_sub += 1
+            else:
+                updated_sub += 1
+
+        print("--- Chemicals Import Complete ---")
+        print(f"Created chemicals: {created_chem}")
+        print(f"Updated chemicals: {updated_chem}")
+        print(f"Created chemical stock rows: {created_sub}")
+        print(f"Updated chemical stock rows: {updated_sub}")
+    finally:
+        wb.close()
+
+
+def glassware_total_units(row_values, start_col):
+    # In this sheet, each numeric cell after the descriptor columns represents stock count.
+    total = 0
+    for value in row_values[start_col:]:
+        total += parse_int(value)
+    return max(total, 0)
+
+
+@transaction.atomic
+def import_glassware(file_name="glassware.csv"):
+    file_path = LEGACY_DIR / file_name
+    if not file_path.exists():
+        raise FileNotFoundError(f"Missing file: {file_path}")
+
+    wb = load_workbook_from_misnamed_xlsx(file_path)
+    try:
+        ws = wb["2020-23 DUES LIST"] if "2020-23 DUES LIST" in wb.sheetnames else wb[wb.sheetnames[0]]
+
+        header_row = find_header_row(ws, ["GLASS WARE NO", "PASSWORD123"])
+        if header_row is None:
+            raise ValueError("Could not locate glassware header row")
+
+        headers = [normalize_text(c.value).upper() for c in ws[header_row]]
+        code_idx = next(i for i, h in enumerate(headers) if "GLASS WARE NO" in h)
+        name_idx = next(i for i, h in enumerate(headers) if "PASSWORD123" in h)
+        data_start = header_row + 1
+
+        glassware_category, _ = Category.objects.get_or_create(name="Glassware")
+
+        created_items = 0
+        updated_items = 0
+        created_sub_items = 0
+
+        for row in ws.iter_rows(min_row=data_start, values_only=True):
+            row_values = list(row)
+            if len(row_values) <= max(code_idx, name_idx):
+                continue
+
+            base_code = normalize_text(row_values[code_idx])
+            name = normalize_text(row_values[name_idx])
+            if not base_code or not name:
+                continue
+            if "GLASS WARE NO" in base_code.upper() or "PASSWORD123" in name.upper():
+                continue
+
+            item, created = Item.objects.get_or_create(
+                name=name,
+                defaults={
+                    "specification": "Legacy stock import",
+                    "location": "Legacy Store",
+                    "category": glassware_category,
+                },
+            )
+            if created:
+                created_items += 1
+            else:
+                changed = False
+                if item.category_id != glassware_category.id:
+                    item.category = glassware_category
+                    changed = True
+                if not item.location:
+                    item.location = "Legacy Store"
+                    changed = True
+                if changed:
+                    item.save(update_fields=["category", "location"])
+                    updated_items += 1
+
+            desired_units = glassware_total_units(row_values, name_idx + 1)
+            if desired_units <= 0:
+                continue
+
+            existing_units = ItemSub.objects.filter(item_id=item, item_code__startswith=f"{base_code}-").count()
+            to_create = max(0, desired_units - existing_units)
+            if to_create == 0:
+                continue
+
+            bulk_rows = []
+            start_no = existing_units + 1
+            for i in range(start_no, start_no + to_create):
+                bulk_rows.append(
+                    ItemSub(
+                        item_id=item,
+                        item_code=f"{base_code}-{i:04d}",
+                        company="Legacy Stock",
+                        fund="Legacy",
+                        condition="working",
+                        price=Decimal("0.00"),
                     )
+                )
 
-                    try:
-                        total_kg = float(kg_val) if kg_val else 0
-                    except ValueError:
-                        total_kg = 0
+            ItemSub.objects.bulk_create(bulk_rows, batch_size=500)
+            item.update_quantity()
+            created_sub_items += to_create
 
-                    if total_kg > 0:
-                        ChemicalSub.objects.create(
-                            chemical=chemical, quantity=int(total_kg*1000),
-                            available_amount=int(total_kg*1000), state='Solid',
-                            company='Legacy Stock', fund='Legacy'
-                        )
-                        print(f"✅ Added {total_kg}kg of {chem_name}")
+        print("--- Glassware Import Complete ---")
+        print(f"Created items: {created_items}")
+        print(f"Updated items: {updated_items}")
+        print(f"Created item stock rows: {created_sub_items}")
+    finally:
+        wb.close()
 
-    except Exception as e:
-        print(f"Error: {e}")
 
-def import_glassware():
-    print("\n--- Importing Glassware ---")
-    try:
-        with open('legacy_data/glassware.csv', 'r', encoding='latin1') as f:
-            reader = list(csv.reader(f))
-            name_idx, code_idx, stock_idx = -1, -1, -1
-
-            for r_idx, row in enumerate(reader):
-                clean_row = [str(c).strip().upper() for c in row]
-                for c_idx, cell in enumerate(clean_row):
-                    if 'PASSWORD123' in cell: name_idx = c_idx
-                    if 'GLASS WARE NO' in cell: code_idx = c_idx
-                    if 'BALANCE TOTAL' in cell or 'BALANCE' in cell: stock_idx = c_idx
-                
-                if name_idx != -1 and stock_idx != -1:
-                    start_row = r_idx + 1
-                    break
-            else:
-                print("❌ Error: Could not find columns in glassware.csv")
-                return
-
-            for row in reader[start_row:]:
-                if len(row) > max(name_idx, stock_idx):
-                    item_name = row[name_idx].strip()
-                    item_code = row[code_idx].strip() if code_idx != -1 else "GL"
-                    stock_val = row[stock_idx].strip()
-
-                    if not item_name or item_name.upper() == 'NAN' or 'PASSWORD123' in item_name.upper():
-                        continue
-
-                    item, _ = Item.objects.get_or_create(name=item_name, defaults={'category': 'Glassware', 'type': 'Consumable'})
-                    
-                    try:
-                        count = int(float(stock_val)) if stock_val else 0
-                    except ValueError:
-                        count = 0
-
-                    for i in range(count):
-                        ItemSub.objects.create(item=item, code=f"{item_code}-{i+1}", condition='Working')
-                    if count > 0: print(f"✅ Added {count} units of {item_name}")
-
-    except Exception as e:
-        print(f"Error: {e}")
-
-if __name__ == '__main__':
+if __name__ == "__main__":
+    print("Starting legacy import...")
     import_chemicals()
     import_glassware()
-    print("\n🚀 All done!")
+    print("Legacy import completed.")
